@@ -18,10 +18,6 @@ export class RegisterUserDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    username: string;
-
-    @ApiProperty()
-    @IsNotEmpty()
     dateBirth: string;
     
     @ApiProperty()
@@ -31,10 +27,6 @@ export class RegisterUserDto {
     @ApiProperty()
     @IsNotEmpty()
     email: string;
-    
-    @ApiProperty()
-    @IsNotEmpty()
-    address: string;
 
     @ApiProperty()
     @IsNotEmpty()
@@ -51,7 +43,9 @@ export class RegisterUserDto {
 
 export class LoginUserDto {
     @ApiProperty()
+    @IsNotEmpty()
     email: string;
     @ApiProperty()
+    @IsNotEmpty()
     password: string;
 }

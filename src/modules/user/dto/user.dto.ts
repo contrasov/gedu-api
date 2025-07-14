@@ -11,9 +11,6 @@ export class CreateUserDto {
     name: string;
 
     @ApiProperty()
-    username: string;
-
-    @ApiProperty()
     dateBirth: string;
     
     @ApiProperty()
@@ -21,9 +18,6 @@ export class CreateUserDto {
 
     @ApiProperty()
     email: string;
-    
-    @ApiProperty()
-    address: string;
 
     @ApiProperty()
     cpf: string;

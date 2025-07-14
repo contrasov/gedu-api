@@ -24,6 +24,7 @@ export class SubjectController {
     }
 
     @Put(':id')
+    @ApiBody({type: SubjectDto, required: false})
     async putSubject(@Param('id') subjectId: string, @Body() updateSubject: Partial<SubjectDto>){
         return this.subjectService.putSubject(subjectId, updateSubject);
     }

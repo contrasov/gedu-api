@@ -13,15 +13,11 @@ export class User extends Document {
   @Prop({ required: true })
   name: string;
   @Prop({ required: true })
-  username: string;
-  @Prop({ required: true })
   dateBirth: string;
   @Prop({ required: true })
   phone: string;
   @Prop({ required: true, unique: true })
   email: string;
-  @Prop({ required: true })
-  address: string;
   @Prop({required: true, unique: true})
   cpf: string;
   @Prop({required: function() {return this.type == UserType.TEACHER;} })
