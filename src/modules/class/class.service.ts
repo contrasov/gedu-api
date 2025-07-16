@@ -13,15 +13,15 @@ export class ClassService {
         @InjectModel(Class.name) private classModel: Model<Class>,
         @InjectModel(Subject.name) private subjectModel: Model<Subject>,
         @InjectModel(User.name) private userModel: Model<User>
-    ){}
+    ) { }
 
-    async createClass(createClassDto: ClassDto){
+    async createClass(createClassDto: ClassDto) {
         const subject = await this.subjectModel.findById(createClassDto.subjectId);
         if (!subject) {
             throw new Error('Disciplina não encontrada.')
         }
 
-        const verify = await this.classModel.countDocuments({ subjectId: createClassDto.subjectId});
+        const verify = await this.classModel.countDocuments({ subjectId: createClassDto.subjectId });
         const turmaSuffix = String.fromCharCode(65 + verify);
 
         const newClass = new this.classModel({
@@ -32,24 +32,35 @@ export class ClassService {
     }
 
     async getClasses() {
-        return await this.classModel.find();
+        return await this.classModel.find().populate([
+            {
+                path: 'subjectId',
+                model: 'Subject',
+                select: 'code'
+            },
+            {
+                path: 'teacherId',
+                model: 'User',
+                select: 'name'
+            }
+        ]);
     }
 
     async getClass(classId: string) {
         return await this.classModel.findById(classId);
     }
 
-    async putClass(classId: string, updateClassDto: Partial<ClassDto>){
+    async putClass(classId: string, updateClassDto: Partial<ClassDto>) {
         return await this.classModel.findByIdAndUpdate(classId, updateClassDto);
     }
 
-    async deleteClass(classId: string){
+    async deleteClass(classId: string) {
         return await this.classModel.findByIdAndDelete(classId);
     }
 
-    async addStudent(classId: string, addStudenDto: addStudenDto){
+    async addStudent(classId: string, addStudenDto: addStudenDto) {
         const student = await this.userModel.findById(addStudenDto.student);
-        if (!student || student.type !== UserType.STUDENT ){
+        if (!student || student.type !== UserType.STUDENT) {
             throw new Error(
                 !student
                     ? 'Usuário não encontrado.'
@@ -59,7 +70,7 @@ export class ClassService {
 
         const updateClass = await this.classModel.findByIdAndUpdate(
             classId,
-            {$addToSet: { studentIds: addStudenDto.student} },
+            { $addToSet: { studentIds: addStudenDto.student } },
             { new: true }
         );
 

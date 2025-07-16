@@ -19,6 +19,11 @@ export class ClassController {
         return this.classService.getClasses();
     }
 
+    @Get(':id')
+    async getClass(@Param('id') classId: string){
+        return this.classService.getClass(classId);
+    }
+
     @Put(':id')
     @ApiBody({type: ClassDto, required: false})
     async putClass(@Param('id') classId: string, @Body() updateClassDto: Partial<ClassDto>){
