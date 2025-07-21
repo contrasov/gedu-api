@@ -3,7 +3,8 @@ import mongoose, { Document, ObjectId } from 'mongoose';
 
 export enum UserType {
   STUDENT = 'Student',
-  TEACHER = 'Teacher'
+  TEACHER = 'Teacher',
+  ADM = 'Adm'
 }
 
 @Schema({ collection: 'users' })

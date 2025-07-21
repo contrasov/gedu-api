@@ -1,11 +1,13 @@
-import { Controller, Post, Get, Param, Put, Delete, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Put, Delete, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ClassService } from './class.service';
 import { ClassDto } from './dto/class.dto';
 import { addStudenDto } from './dto/student.dto';
+import { JwtAuthGuard } from '../auth/auth.guard';
 
 @ApiTags('class')
 @Controller('class')
+@UseGuards(JwtAuthGuard)
 export class ClassController {
     constructor(private classService: ClassService){}
 
@@ -15,8 +17,9 @@ export class ClassController {
     }
 
     @Get()
-    async getAll(){
-        return this.classService.getClasses();
+    async getAll(@Request() req){
+        const studentId = req.user.id;
+        return this.classService.getClasses(studentId);
     }
 
     @Get(':id')
@@ -36,8 +39,17 @@ export class ClassController {
     }
 
     @Post(':id/add-student')
-    async addStudent(@Param('id') classId: string, @Body() addStudenDto: addStudenDto) {
-        return this.classService.addStudent(classId, addStudenDto);
+    async addStudent(@Param('id') classId: string, @Request() req) {
+        const studentId = req.user.id;
+        const student = await this.classService.addStudent(classId, studentId); 
+        await this.classService.updateClassStudentIds(classId, studentId);
+        return student;
+    }
+
+    @Delete(':id/remove-student')
+    async removeStudent(@Param('id') classId: string, @Request() req){
+        const studentId = req.user.id;
+        return await this.classService.removeStudent(classId, studentId);
     }
 
 }

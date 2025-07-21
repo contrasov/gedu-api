@@ -9,15 +9,19 @@ import { CodeDto, VerifyCodeDto } from './dto/code.dto';
 export class UserController {
     constructor(private userService: UserService){}
 
-    @Post()
-    @ApiBody({ type: CreateUserDto })
-    async create(@Body () createUserDto: CreateUserDto) {
-        return this.userService.createUser(createUserDto);
-    }
-
     @Get()
     async getAll() {
         return this.userService.getUsers();
+    }
+
+    @Get('students')
+    async getStudents() {
+        return this.userService.getStudents();
+    }
+
+    @Get('teachers')
+    async getTeachers() {
+        return this.userService.getTeachers();
     }
 
     @Get(':id')

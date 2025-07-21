@@ -48,6 +48,13 @@ export class SubjectService {
     }
 
     async deleteSubject(subjectId: string){
-        return await this.subjectModel.findByIdAndDelete(subjectId)
+        const subjectToDelete = await this.subjectModel.findByIdAndDelete(subjectId)
+        if(subjectToDelete){
+            await this.courseModel.updateMany(
+                { subjectIds: subjectId },
+                { $pull: { subjectIds: subjectId } }
+            );
+        }
+
     }
 }

@@ -20,6 +20,9 @@ export class Subject extends Document {
     
     @Prop({type: Date, default: Date.now})
     dateCreate: Date;
+
+    @Prop({type: [mongoose.Schema.Types.ObjectId], required: false})
+    classIds: ObjectId[];
 }
 
 export const SubjectSchema = SchemaFactory.createForClass(Subject);

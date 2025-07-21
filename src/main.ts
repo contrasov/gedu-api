@@ -16,6 +16,7 @@ async function bootstrap() {
     .setTitle('Gedu API')
     .setDescription('API monolítica projetada para gerenciar um sistema acadêmico simples')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

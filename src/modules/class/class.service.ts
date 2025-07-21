@@ -6,19 +6,21 @@ import { ClassDto } from './dto/class.dto';
 import { Subject } from '../subject/subject.schema';
 import { User, UserType } from '../user/user.schema';
 import { addStudenDto } from './dto/student.dto';
+import { Course } from '../course/course.schema';
 
 @Injectable()
 export class ClassService {
     constructor(
         @InjectModel(Class.name) private classModel: Model<Class>,
         @InjectModel(Subject.name) private subjectModel: Model<Subject>,
-        @InjectModel(User.name) private userModel: Model<User>
+        @InjectModel(User.name) private userModel: Model<User>,
+        @InjectModel(Course.name) private courseModel: Model<Course>
     ) { }
 
     async createClass(createClassDto: ClassDto) {
         const subject = await this.subjectModel.findById(createClassDto.subjectId);
         if (!subject) {
-            throw new Error('Disciplina não encontrada.')
+            throw new Error('Disciplina não encontrada.');
         }
 
         const verify = await this.classModel.countDocuments({ subjectId: createClassDto.subjectId });
@@ -28,11 +30,19 @@ export class ClassService {
             ...createClassDto,
             name: `${subject.name} - Turma ${turmaSuffix}`
         });
-        return await newClass.save();
+
+        const savedClass = await newClass.save();
+
+        await this.subjectModel.findByIdAndUpdate(
+            createClassDto.subjectId,
+            { $addToSet: { classIds: savedClass._id } }
+        );
+
+        return savedClass;
     }
 
-    async getClasses() {
-        return await this.classModel.find().populate([
+    async getClasses(studentId: string) {
+        return await this.classModel.find({ studentIds: studentId }).populate([
             {
                 path: 'subjectId',
                 model: 'Subject',
@@ -47,7 +57,23 @@ export class ClassService {
     }
 
     async getClass(classId: string) {
-        return await this.classModel.findById(classId);
+        return await this.classModel.findById(classId).populate([
+            {
+                path: 'subjectId',
+                model: 'Subject',
+                select: 'code'
+            },
+            {
+                path: 'teacherId',
+                model: 'User',
+                select: 'name'
+            },
+            {
+                path: 'studentIds',
+                model: 'User',
+                select: 'name email'
+            }
+        ]);
     }
 
     async putClass(classId: string, updateClassDto: Partial<ClassDto>) {
@@ -55,11 +81,18 @@ export class ClassService {
     }
 
     async deleteClass(classId: string) {
-        return await this.classModel.findByIdAndDelete(classId);
+        const classToDelete = await this.classModel.findByIdAndDelete(classId);
+        if (classToDelete) {
+            await this.subjectModel.updateMany(
+                { classesId: classId },
+                { $pull: { classesId: classId } }
+            );
+        }
+        return classToDelete;
     }
 
-    async addStudent(classId: string, addStudenDto: addStudenDto) {
-        const student = await this.userModel.findById(addStudenDto.student);
+    async addStudent(classId: string, studentId: string) {
+        const student = await this.userModel.findById(studentId);
         if (!student || student.type !== UserType.STUDENT) {
             throw new Error(
                 !student
@@ -70,14 +103,46 @@ export class ClassService {
 
         const updateClass = await this.classModel.findByIdAndUpdate(
             classId,
-            { $addToSet: { studentIds: addStudenDto.student } },
+            { $addToSet: { studentIds: studentId } }, 
             { new: true }
         );
 
         if (!updateClass) {
-            throw new Error('Não foi possivel encontrar a turma.')
+            throw new Error('Não foi possível encontrar a turma.');
         }
 
         return updateClass;
+    }
+
+    async updateClassStudentIds(classId: string, studentId: string) {
+        return await this.classModel.findByIdAndUpdate(
+            classId,
+            { $addToSet: { studentIds: studentId } },
+            { new: true }
+        );
+    }
+
+    async removeStudent(classId: string, studentId: string) {
+        const student = await this.userModel.findById(studentId);
+        
+        if (!student || student.type !== UserType.STUDENT) {
+            throw new Error(
+                !student
+                    ? 'Usuário não encontrado.'
+                    : 'Não é um aluno da Gedu.'
+            );
+        }
+    
+        const updatedClass = await this.classModel.findByIdAndUpdate(
+            classId,
+            { $pull: { studentIds: studentId } },
+            { new: true }
+        );
+    
+        if (!updatedClass) {
+            throw new Error('Não foi possível encontrar a turma.');
+        }
+    
+        return updatedClass;
     }
 }

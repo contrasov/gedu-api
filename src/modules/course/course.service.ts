@@ -18,14 +18,23 @@ export class CourseService {
     }
 
     async getCourses(){
-        return await this.courseModel.find();
+        return await this.courseModel.find().populate({
+            path: 'subjectIds',
+            model: 'Subject',
+            select: 'name'
+        });
     }
 
     async getCourse(courseId: string){
         return await this.courseModel.findById(courseId).populate({
             path: 'subjectIds',
             model: 'Subject',
-            select: 'code name',
+            select: 'code name classIds',
+            populate: {
+                path: 'classIds',
+                model: 'Class',
+                select: 'name'
+            }
         });
     }
 
