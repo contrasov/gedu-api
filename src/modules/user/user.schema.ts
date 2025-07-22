@@ -23,7 +23,7 @@ export class User extends Document {
   cpf: string;
   @Prop({required: function() {return this.type == UserType.TEACHER;} })
   training: string;
-  @Prop({ type: mongoose.Schema.Types.ObjectId, required: function() {return this.type == UserType.STUDENT; }})
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: function() {return this.type == UserType.STUDENT; }})
   courseId: ObjectId;
   @Prop({ type: [mongoose.Schema.Types.ObjectId], required: function() {return this.type == UserType.TEACHER;} })
   subjects: ObjectId[];

@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Param, Put, Delete, Body } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CourseService } from './course.service';
 import { CourseDto } from './dto/course.dto';
 
@@ -24,6 +24,7 @@ export class CourseController {
     }
 
     @Put(':id')
+    @ApiBody({type: CourseDto, required: false})
     async putCourse(@Param('id') courseId: string, @Body() updateCourseDto: Partial<CourseDto>){
         return this.courseService.putCourse(courseId, updateCourseDto);
     }

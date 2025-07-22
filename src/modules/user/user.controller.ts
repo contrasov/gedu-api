@@ -30,6 +30,7 @@ export class UserController {
     }
 
     @Put(':id')
+    @ApiBody({type: CreateUserDto, required: false})
     async putUser(@Param('id') userId: string, @Body() updateUserDto: Partial<CreateUserDto>){
         return this.userService.putUser(userId, updateUserDto);
     }

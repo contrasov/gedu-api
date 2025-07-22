@@ -4,6 +4,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { User, UserSchema, EmailCode, EmailCodeSchema } from './user.schema';
 import { ClassModule } from '../class/class.module';
+import { CourseModule } from '../course/course.module';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { ClassModule } from '../class/class.module';
       { name: User.name, schema: UserSchema }, 
       { name: EmailCode.name, schema: EmailCodeSchema }, 
     ]),
-    ClassModule
+    ClassModule, CourseModule
   ],
   controllers: [UserController],
   providers: [UserService],

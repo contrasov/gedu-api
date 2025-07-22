@@ -5,13 +5,15 @@ import { EmailCode, User } from "./user.schema";
 import { CreateUserDto } from "./dto/user.dto";
 import { CodeDto, VerifyCodeDto } from "./dto/code.dto";
 import { Class } from "../class/class.schema";
+import { Course } from "../course/course.schema";
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>, 
         @InjectModel(EmailCode.name) private codeModel: Model<EmailCode>,
-        @InjectModel(Class.name) private classModel: Model<Class>
+        @InjectModel(Class.name) private classModel: Model<Class>,
+        @InjectModel(Course.name) private courseModel: Model<Course>,
     ) { }
 
     async getUsers() {
@@ -19,7 +21,11 @@ export class UserService {
     }
 
     async getUser(userId: string) {
-        return await this.userModel.findById(userId);
+        return await this.userModel.findById(userId).populate({
+            path: 'courseId',
+            model: 'Course',
+            select: 'code name'
+        });
     }
 
     async getStudents() {
