@@ -1,23 +1,35 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { EmailCode, User } from "./user.schema";
+import { EmailCode, User, UserType } from "./user.schema";
 import { CreateUserDto } from "./dto/user.dto";
 import { CodeDto, VerifyCodeDto } from "./dto/code.dto";
 import { Class } from "../class/class.schema";
 import { Course } from "../course/course.schema";
+import * as bcrypt from 'bcryptjs';
+
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectModel(User.name) private userModel: Model<User>, 
+        @InjectModel(User.name) private userModel: Model<User>,
         @InjectModel(EmailCode.name) private codeModel: Model<EmailCode>,
         @InjectModel(Class.name) private classModel: Model<Class>,
         @InjectModel(Course.name) private courseModel: Model<Course>,
     ) { }
 
+    async createUser(createUser: CreateUserDto) {
+        const hashedPassword = await bcrypt.hash(createUser.password, 10);
+        const newUser = new this.userModel({
+            ...createUser,
+            password: hashedPassword
+        });
+
+        return await newUser.save();
+    }
+
     async getUsers() {
-        return await this.userModel.find();
+        return await this.userModel.find({ type: {$ne: UserType.ADM}});
     }
 
     async getUser(userId: string) {
@@ -29,11 +41,11 @@ export class UserService {
     }
 
     async getStudents() {
-        return await this.userModel.find({type: 'Student'});
+        return await this.userModel.find({ type: 'Student' });
     }
 
     async getTeachers() {
-        return await this.userModel.find({type: 'Teacher'});
+        return await this.userModel.find({ type: 'Teacher' });
     }
 
     async putUser(userId: string, updateUserDto: Partial<CreateUserDto>) {

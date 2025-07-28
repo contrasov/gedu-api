@@ -40,7 +40,7 @@ export class AuthService {
       throw new UnauthorizedException('Usuário ou senha inválido');
     }
 
-    const paiload = {sub: user.id, email: user.email, name: user.name};
+    const paiload = {sub: user.id, email: user.email, name: user.name, type: user.type};
     const acces_token = this.jwtService.sign(paiload);
 
     return { acces_token };

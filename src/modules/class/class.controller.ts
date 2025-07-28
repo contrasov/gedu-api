@@ -4,6 +4,7 @@ import { ClassService } from './class.service';
 import { ClassDto } from './dto/class.dto';
 import { addStudenDto } from './dto/student.dto';
 import { JwtAuthGuard } from '../auth/auth.guard';
+import { UserType } from "src/modules/user/user.schema";
 
 @ApiTags('class')
 @Controller('class')
@@ -17,9 +18,17 @@ export class ClassController {
     }
 
     @Get()
-    async getAll(@Request() req){
-        const studentId = req.user.id;
-        return this.classService.getClasses(studentId);
+    async getAll(@Request() req) {
+        const userId = req.user.id;
+        const userType = req.user.type; 
+
+        if (userType === UserType.ADM) {
+            return this.classService.getAllClasses(); 
+        } else if (userType === UserType.TEACHER) {
+            return this.classService.getClassesByTeacher(userId); 
+        } else {
+            return this.classService.getClasses(userId);
+        }
     }
 
     @Get(':id')

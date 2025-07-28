@@ -55,6 +55,36 @@ export class ClassService {
             }
         ]);
     }
+    
+    async getAllClasses() {
+        return await this.classModel.find().populate([
+            {
+                path: 'subjectId',
+                model: 'Subject',
+                select: 'code'
+            },
+            {
+                path: 'teacherId',
+                model: 'User',
+                select: 'name'
+            }
+        ]);
+    }
+
+    async getClassesByTeacher(teacherId: string) {
+        return await this.classModel.find({ teacherId }).populate([
+            {
+                path: 'subjectId',
+                model: 'Subject',
+                select: 'code'
+            },
+            {
+                path: 'teacherId',
+                model: 'User',
+                select: 'name'
+            }
+        ]);
+    }
 
     async getClass(classId: string) {
         return await this.classModel.findById(classId).populate([

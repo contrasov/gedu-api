@@ -15,10 +15,6 @@ export class CourseDto {
     @IsNotEmpty()
     @IsNumber()
     semesterDuration: number;
-
-    @ApiProperty({required: false})
-    @IsOptional()
-    subjectIds: ObjectId[];
     
     @IsNotEmpty()
     @ApiProperty()
