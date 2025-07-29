@@ -5,8 +5,14 @@ import { Class } from './class.schema';
 import { ClassDto } from './dto/class.dto';
 import { Subject } from '../subject/subject.schema';
 import { User, UserType } from '../user/user.schema';
-import { addStudenDto } from './dto/student.dto';
 import { Course } from '../course/course.schema';
+import { NewsDto } from './dto/news.dto';
+import { News } from './news.schema';
+import { Attendance } from './attendance.schema';
+import { AttendanceDto } from './dto/attendace.dto';
+import { ActivitieDto } from './dto/activitie.dto';
+import { Activities } from './activities.schema';
+
 
 @Injectable()
 export class ClassService {
@@ -14,7 +20,10 @@ export class ClassService {
         @InjectModel(Class.name) private classModel: Model<Class>,
         @InjectModel(Subject.name) private subjectModel: Model<Subject>,
         @InjectModel(User.name) private userModel: Model<User>,
-        @InjectModel(Course.name) private courseModel: Model<Course>
+        @InjectModel(Course.name) private courseModel: Model<Course>,
+        @InjectModel(News.name) private newsModel: Model<News>,
+        @InjectModel(Attendance.name) private attendaceModel: Model <Attendance>,
+        @InjectModel(Activities.name) private activitiesModel: Model <Activities>
     ) { }
 
     async createClass(createClassDto: ClassDto) {
@@ -55,7 +64,7 @@ export class ClassService {
             }
         ]);
     }
-    
+
     async getAllClasses() {
         return await this.classModel.find().populate([
             {
@@ -133,7 +142,7 @@ export class ClassService {
 
         const updateClass = await this.classModel.findByIdAndUpdate(
             classId,
-            { $addToSet: { studentIds: studentId } }, 
+            { $addToSet: { studentIds: studentId } },
             { new: true }
         );
 
@@ -154,7 +163,7 @@ export class ClassService {
 
     async removeStudent(classId: string, studentId: string) {
         const student = await this.userModel.findById(studentId);
-        
+
         if (!student || student.type !== UserType.STUDENT) {
             throw new Error(
                 !student
@@ -162,17 +171,78 @@ export class ClassService {
                     : 'Não é um aluno da Gedu.'
             );
         }
-    
+
         const updatedClass = await this.classModel.findByIdAndUpdate(
             classId,
             { $pull: { studentIds: studentId } },
             { new: true }
         );
-    
+
         if (!updatedClass) {
             throw new Error('Não foi possível encontrar a turma.');
         }
-    
+
         return updatedClass;
+    }
+
+    async createNews(classId: string, createNews: NewsDto) {
+        const newNews = new this.newsModel({
+            ...createNews,
+            classId: classId
+        });
+
+        const savedNews = await newNews.save();
+        return savedNews;
+    }
+
+    async getNewsByClass(classId: string) {
+        return await this.newsModel.find({ classId }).sort({ createdAt: -1 })
+    }
+
+    async deleteNews(classId: string, newsId: string) {
+        const news = await this.newsModel.findOneAndDelete({
+            _id: newsId,
+            classId: classId, 
+        });
+
+        if (!news) {
+            throw new Error('Notícia não encontrada ou não pertence à turma');
+        }
+
+        return { message: 'Notícia removida com sucesso' };
+    }
+
+    async createAttendance(classId: string, createAttendance: AttendanceDto ){
+        const newAttendance = new this.attendaceModel({
+            ...createAttendance,
+            classId: classId
+        });
+
+        const savedAttendance = await newAttendance.save();
+        return savedAttendance;
+    }
+
+    async getAttendanceByClass(classId: string){
+        return await this.attendaceModel.find({ classId }).sort({ createAt: -1 })
+    }
+
+    async createActivitie(classId: string, createActivity: ActivitieDto ){
+        const newActivitie = new this.activitiesModel({
+            ...createActivity,
+            classId: classId
+        });
+
+        const savedActivities = await newActivitie.save();
+        return savedActivities;
+    }
+
+    async getActivitiesByClass(classId: string){
+        return await this.activitiesModel.find({ classId }).sort({ createdAt: -1 })
+    }
+
+    async getActivitiesInMyClass(studentId: string) {
+        const classes = await this.classModel.find({ studentIds: studentId });
+        const activities = await this.activitiesModel.find({ classId: { $in: classes.map(c => c._id) } });
+        return activities;
     }
 }

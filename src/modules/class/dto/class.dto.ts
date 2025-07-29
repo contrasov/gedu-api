@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ObjectId } from "mongoose";
-import { IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class ClassDto {
     @ApiProperty()
